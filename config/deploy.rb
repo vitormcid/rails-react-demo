@@ -8,8 +8,7 @@ set :repo_url, "git@github.com:vitormcid/rails-react-demo.git"
 set :deploy_to, "/home/deploy/www/rails-react-demo"
 
 # Default value for :linked_files is []
-append :linked_files, "config/database.yml",  "config/master.key"
-append :linked_files, 'config/database.yml',  'config/secrets.yml', '.env'
+
 # Default value for linked_dirs is []
 append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/system", "storage"
 
