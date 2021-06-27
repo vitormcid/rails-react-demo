@@ -1,113 +1,62 @@
-require "active_support/core_ext/integer/time"
+# config valid for current version and patch releases of Capistrano
+lock "~> 3.11.0"
 
-Rails.application.configure do
-  # Settings specified here will take precedence over those in config/application.rb.
+set :application, "rails-react-demo"
+set :repo_url, "git@github.com:vitormcid/rails-react-demo.git"
 
-  # Code is not reloaded between requests.
-  config.cache_classes = true
+# Default deploy_to directory is /var/www/my_app_name
+set :deploy_to, "/home/deploy/www/rails-react-demo"
 
-  # Eager load code on boot. This eager loads most of Rails and
-  # your application in memory, allowing both threaded web servers
-  # and those relying on copy on write to perform better.
-  # Rake tasks automatically ignore this option for performance.
-  config.eager_load = true
+# Default value for :linked_files is []
+append :linked_files, "config/database.yml",  "config/master.key"
 
-  # Full error reports are disabled and caching is turned on.
-  config.consider_all_requests_local       = false
+# Default value for linked_dirs is []
+append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/system", "storage"
 
-  # Ensures that a master key has been made available in either ENV["RAILS_MASTER_KEY"]
-  # or in config/master.key. This key is used to decrypt credentials (and other encrypted files).
-  # config.require_master_key = true
+# Default value for keep_releases is 5
+set :keep_releases, 5
 
-  # Disable serving static files from the `/public` folder by default since
-  # Apache or NGINX already handles this.
-  config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
+# Rbenv
+set :rbenv_type, :user # or :system, depends on your rbenv setup
+set :rbenv_ruby, '2.5.5'
 
-  # Enable serving of images, stylesheets, and JavaScripts from an asset server.
-  # config.asset_host = 'http://assets.example.com'
+# Nvm/Node.JS
+set :nvm_type, :user # or :system, depends on your nvm setup
+set :nvm_node, 'v10.16.3'
+set :nvm_map_bins, %w{node npm yarn}
+set :yarn_flags, '--silent --no-progress'
 
-  # Specifies the header that your server uses for sending files.
-  # config.action_dispatch.x_sendfile_header = 'X-Sendfile' # for Apache
-  # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
+# # Passenger
+set :passenger_roles, :app
+set :passenger_restart_runner, :sequence
+set :passenger_restart_wait, 10
+set :passenger_restart_limit, 2
+set :passenger_restart_with_sudo, false
+set :passenger_environment_variables, {RAILS_ENV: 'production'}
+set :passenger_restart_command, 'passenger stop && passenger start --daemonize --address 127.0.0.1 --port 3000'
+set :passenger_restart_options, -> { "#{deploy_to}/current" }
 
-  # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+# Nginx
+set :nginx_roles, :web
+set :nginx_sudo_paths, []
+set :nginx_sudo_tasks, ['nginx:restart']
 
-  # Mount Action Cable outside main process or domain.
-  # config.action_cable.mount_path = nil
-  # config.action_cable.url = 'wss://example.com/cable'
-  # config.action_cable.allowed_request_origins = [ 'http://example.com', /http:\/\/example.*/ ]
-
-  # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  # config.force_ssl = true
-
-  # Include generic and useful information about system operation, but avoid logging too much
-  # information to avoid inadvertent exposure of personally identifiable information (PII).
-  config.log_level = :info
-
-  # Prepend all log lines with the following tags.
-  config.log_tags = [ :request_id ]
-
-  # Use a different cache store in production.
-  # config.cache_store = :mem_cache_store
-
-  # Use a real queuing backend for Active Job (and separate queues per environment).
-  # config.active_job.queue_adapter     = :resque
-  # config.active_job.queue_name_prefix = "rails_react_demo_production"
-
-  config.action_mailer.perform_caching = false
-
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
-
-  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
-  # the I18n.default_locale when a translation cannot be found).
-  config.i18n.fallbacks = true
-
-  # Send deprecation notices to registered listeners.
-  config.active_support.deprecation = :notify
-
-  # Log disallowed deprecations.
-  config.active_support.disallowed_deprecation = :log
-
-  # Tell Active Support which deprecation messages to disallow.
-  config.active_support.disallowed_deprecation_warnings = []
-
-  # Use default logging formatter so that PID and timestamp are not suppressed.
-  config.log_formatter = ::Logger::Formatter.new
-
-  # Use a different logger for distributed setups.
-  # require "syslog/logger"
-  # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new 'app-name')
-
-  if ENV["RAILS_LOG_TO_STDOUT"].present?
-    logger           = ActiveSupport::Logger.new(STDOUT)
-    logger.formatter = config.log_formatter
-    config.logger    = ActiveSupport::TaggedLogging.new(logger)
+# Used to build for optimized production
+namespace :deploy do
+  task :yarn_build do
+    on roles fetch(:yarn_roles) do
+      within fetch(:yarn_target_path, release_path) do
+        execute fetch(:yarn_bin), 'install'
+        execute fetch(:yarn_bin), 'build'
+      end
+    end
   end
-
-  # Do not dump schema after migrations.
-  config.active_record.dump_schema_after_migration = false
-
-  # Inserts middleware to perform automatic connection switching.
-  # The `database_selector` hash is used to pass options to the DatabaseSelector
-  # middleware. The `delay` is used to determine how long to wait after a write
-  # to send a subsequent read to the primary.
-  #
-  # The `database_resolver` class is used by the middleware to determine which
-  # database is appropriate to use based on the time delay.
-  #
-  # The `database_resolver_context` class is used by the middleware to set
-  # timestamps for the last write to the primary. The resolver uses the context
-  # class timestamps to determine how long to wait before reading from the
-  # replica.
-  #
-  # By default Rails will store a last write timestamp in the session. The
-  # DatabaseSelector middleware is designed as such you can define your own
-  # strategy for connection switching and pass that into the middleware through
-  # these configuration options.
-  # config.active_record.database_selector = { delay: 2.seconds }
-  # config.active_record.database_resolver = ActiveRecord::Middleware::DatabaseSelector::Resolver
-  # config.active_record.database_resolver_context = ActiveRecord::Middleware::DatabaseSelector::Resolver::Session
+  desc 'Restart application'
+  task :restart do
+    on roles fetch(:nginx_roles) do
+      execute :sudo, '/etc/init.d/nginx restart'
+    end
+  end
+  before 'symlink:release', :yarn_build
+  after :finishing, :restart
 end
