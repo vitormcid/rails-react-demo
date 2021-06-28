@@ -9,7 +9,7 @@ set :deploy_to, "/home/deploy/www/rails-react-demo"
 
 # Default value for :linked_files is []
 append :linked_files, "config/database.yml",  "config/master.key"
-append :linked_files, 'config/database.yml', 'config/secrets.yml', '.env'
+append :linked_files, 'config/database.yml',  '.env'
 # Default value for linked_dirs is []
 append :linked_dirs, "log", "tmp/pids", "tmp/cache", "tmp/sockets", "public/system", "storage"
 
