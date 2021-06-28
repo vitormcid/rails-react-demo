@@ -33,7 +33,7 @@ require "capistrano/bundler"
 # require "capistrano/rails/assets"
 # require "capistrano/rails/migrations"
 # require "capistrano/passenger"
-require "capistrano/rails/migrations"
+
 require "capistrano/nvm"
 require 'capistrano/yarn'
 require "capistrano/nginx"

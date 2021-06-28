@@ -33,7 +33,7 @@ set :passenger_restart_wait, 10
 set :passenger_restart_limit, 2
 set :passenger_restart_with_sudo, false
 set :passenger_environment_variables, {RAILS_ENV: 'production'}
-set :passenger_restart_command, 'passenger stop && passenger start --daemonize --address 127.0.0.1 --port 3000'
+set :passenger_restart_command, 'passenger stop --ignore-app-not-running && passenger start --daemonize --address 127.0.0.1 --port 3000'
 set :passenger_restart_options, -> { "#{deploy_to}/current" }
 
 # Nginx
